@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Kas Aby</title>
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Pencatatan infaq keluarga">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Kas Aby">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="bg-orbs" aria-hidden="true"><span></span><span></span></div>
+
+  <!-- ============ HEADER ============ -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">K</div>
+      <div>
+        <h1 id="page-title">Beranda</h1>
+        <p id="role-badge" class="role">Memuat…</p>
+      </div>
+    </div>
+    <button id="btn-refresh" class="icon-btn" aria-label="Muat ulang data">
+      <svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5"/></svg>
+    </button>
+  </header>
+
+  <div id="offline-bar" class="offline-bar hidden">Sedang offline. Data yang tampil dari simpanan terakhir.</div>
+  <div id="outbox-bar" class="outbox-bar hidden"></div>
+
+  <main id="app">
+    <!-- ============ BERANDA ============ -->
+    <section id="page-beranda" class="page active">
+      <div class="hero glass">
+        <p class="label">Saldo kas</p>
+        <p id="saldo-utama" class="hero-amount skeleton-text">Rp 0</p>
+        <p id="saldo-sub" class="hero-sub">&nbsp;</p>
+      </div>
+
+      <div class="period-chips" data-scope="beranda"></div>
+      <div id="custom-range-beranda" class="custom-range hidden"></div>
+
+      <div class="stats">
+        <div class="stat glass">
+          <span class="dot in"></span><p class="label">Pemasukan</p>
+          <p id="st-in" class="stat-amount">-</p><p id="st-in-d" class="delta"></p>
+        </div>
+        <div class="stat glass">
+          <span class="dot out"></span><p class="label">Pengeluaran</p>
+          <p id="st-out" class="stat-amount">-</p><p id="st-out-d" class="delta"></p>
+        </div>
+        <div class="stat glass wide">
+          <p class="label">Selisih periode ini</p>
+          <p id="st-net" class="stat-amount">-</p>
+        </div>
+      </div>
+
+      <div class="card glass">
+        <div class="card-head">
+          <h2>Infaq bulan ini</h2>
+          <span id="infaq-count" class="pill"></span>
+        </div>
+        <div class="progress"><div id="infaq-bar"></div></div>
+        <p id="infaq-text" class="muted small"></p>
+        <div id="infaq-pending" class="pending-list"></div>
+      </div>
+
+      <div class="card glass">
+        <div class="card-head"><h2>Insight</h2></div>
+        <div id="insight-beranda" class="insights"></div>
+      </div>
+
+      <div class="card glass">
+        <div class="card-head">
+          <h2>Transaksi terbaru</h2>
+          <button class="link-btn" data-goto="riwayat">Lihat semua</button>
+        </div>
+        <div id="recent-list" class="tx-list"></div>
+      </div>
+    </section>
+
+    <!-- ============ RIWAYAT ============ -->
+    <section id="page-riwayat" class="page">
+      <div class="search glass">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+        <input id="h-q" type="search" placeholder="Cari nama, pos, atau catatan" autocomplete="off">
+      </div>
+      <div class="seg" id="h-jenis">
+        <button data-v="" class="on">Semua</button>
+        <button data-v="Masuk">Pemasukan</button>
+        <button data-v="Keluar">Pengeluaran</button>
+      </div>
+      <div class="filters">
+        <select id="h-kat" aria-label="Filter kategori"><option value="">Semua kategori</option></select>
+        <input id="h-from" type="date" aria-label="Dari tanggal">
+        <input id="h-to" type="date" aria-label="Sampai tanggal">
+      </div>
+      <p id="h-summary" class="muted small"></p>
+      <div id="history-list" class="tx-list grouped"></div>
+    </section>
+
+    <!-- ============ GRAFIK ============ -->
+    <section id="page-grafik" class="page">
+      <div class="period-chips" data-scope="grafik"></div>
+      <div id="custom-range-grafik" class="custom-range hidden"></div>
+
+      <div class="card glass">
+        <div class="card-head"><h2>Pengeluaran per kategori</h2></div>
+        <div class="chart-box donut"><canvas id="ch-kategori"></canvas></div>
+        <div id="kategori-legend" class="legend"></div>
+      </div>
+      <div class="card glass">
+        <div class="card-head"><h2 id="tren-title">Tren pengeluaran</h2></div>
+        <div class="chart-box"><canvas id="ch-tren"></canvas></div>
+      </div>
+      <div class="card glass">
+        <div class="card-head"><h2>Pemasukan vs pengeluaran</h2><span class="pill">6 bulan</span></div>
+        <div class="chart-box"><canvas id="ch-banding"></canvas></div>
+      </div>
+      <div class="card glass">
+        <div class="card-head"><h2>Insight</h2></div>
+        <div id="insight-grafik" class="insights"></div>
+      </div>
+    </section>
+
+    <!-- ============ PENGATURAN ============ -->
+    <section id="page-pengaturan" class="page">
+      <div id="set-login" class="card glass">
+        <div class="card-head"><h2>Masuk sebagai pemilik</h2></div>
+        <p class="muted small">Masukkan PIN untuk bisa menambah, mengubah, dan menghapus transaksi dari HP ini.</p>
+        <form id="form-login" class="row-form">
+          <input id="login-pin" type="password" inputmode="numeric" autocomplete="current-password" placeholder="PIN" required>
+          <button class="btn primary" type="submit">Masuk</button>
+        </form>
+      </div>
+
+      <div id="set-owner" class="hidden">
+        <div class="card glass">
+          <div class="card-head"><h2>Bagikan ke keluarga</h2></div>
+          <p class="muted small">Link ini hanya bisa melihat. Tidak ada yang bisa menambah atau mengubah data lewat link ini.</p>
+          <div class="share-box"><code id="share-link">-</code></div>
+          <div class="btn-row">
+            <button id="btn-copy" class="btn soft">Salin link</button>
+            <button id="btn-share" class="btn soft">Bagikan…</button>
+          </div>
+        </div>
+
+        <div class="card glass">
+          <div class="card-head"><h2>Kategori</h2></div>
+          <div class="seg small" id="kat-tab">
+            <button data-v="Masuk" class="on">Donatur</button>
+            <button data-v="Keluar">Pos pengeluaran</button>
+          </div>
+          <div id="kat-list" class="kat-list"></div>
+          <form id="form-kat" class="stack">
+            <input id="kat-nama" placeholder="Nama baru" maxlength="40" required>
+            <input id="kat-nominal" inputmode="numeric" placeholder="Komitmen per bulan (opsional)">
+            <button class="btn primary" type="submit">Tambah kategori</button>
+          </form>
+        </div>
+
+        <div class="card glass">
+          <button id="btn-logout" class="btn danger-soft full">Keluar dari HP ini</button>
+        </div>
+      </div>
+
+      <div class="card glass">
+        <div class="card-head"><h2>Tentang</h2></div>
+        <p class="muted small">Data tersimpan langsung di Google Sheets milik pemilik. Aplikasi ini hanya jembatan untuk mencatat dan melihat.</p>
+        <p class="muted small" id="about-sync"></p>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ BOTTOM NAV ============ -->
+  <nav class="bottom-nav glass">
+    <button data-page="beranda" class="on" aria-label="Beranda">
+      <svg viewBox="0 0 24 24"><path d="M3 11 12 4l9 7v8a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span>Beranda</span>
+    </button>
+    <button data-page="riwayat" aria-label="Riwayat">
+      <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>Riwayat</span>
+    </button>
+    <button id="fab" class="fab" aria-label="Tambah transaksi">
+      <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+    <button data-page="grafik" aria-label="Grafik">
+      <svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Grafik</span>
+    </button>
+    <button data-page="pengaturan" aria-label="Pengaturan">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>Atur</span>
+    </button>
+  </nav>
+
+  <!-- ============ SHEET: FORM TRANSAKSI ============ -->
+  <div id="sheet-form" class="sheet" aria-hidden="true">
+    <div class="sheet-backdrop" data-close></div>
+    <div class="sheet-panel" role="dialog" aria-labelledby="form-title">
+      <div class="grabber"></div>
+      <div class="sheet-head">
+        <h2 id="form-title">Tambah transaksi</h2>
+        <button class="icon-btn" data-close aria-label="Tutup"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+      </div>
+      <form id="form-tx" novalidate>
+        <div class="seg big" id="f-jenis">
+          <button type="button" data-v="Masuk" class="on in">Pemasukan</button>
+          <button type="button" data-v="Keluar" class="out">Pengeluaran</button>
+        </div>
+
+        <label class="amount-field">
+          <span>Rp</span>
+          <input id="f-nominal" inputmode="numeric" autocomplete="off" placeholder="0" aria-label="Nominal">
+        </label>
+        <p id="err-nominal" class="err"></p>
+
+        <p class="field-label" id="f-kat-label">Donatur</p>
+        <div id="f-kat" class="chips"></div>
+        <div id="f-kat-new" class="new-kat hidden">
+          <input id="f-kat-new-name" placeholder="Nama baru" maxlength="40">
+          <button type="button" id="f-kat-new-save" class="btn soft">Simpan</button>
+        </div>
+        <p id="err-kat" class="err"></p>
+
+        <div class="grid2">
+          <label class="field"><span>Tanggal</span><input id="f-tanggal" type="date" required></label>
+          <label class="field"><span>Bulan untuk</span><input id="f-bulan" type="month" required></label>
+        </div>
+
+        <div id="f-multi" class="multi">
+          <div>
+            <p class="field-label">Bayar untuk</p>
+            <p id="f-multi-info" class="muted small"></p>
+          </div>
+          <div class="stepper">
+            <button type="button" id="f-minus" aria-label="Kurangi">−</button>
+            <span id="f-jumlah">1</span><small>bln</small>
+            <button type="button" id="f-plus" aria-label="Tambah">+</button>
+          </div>
+        </div>
+
+        <label class="field"><span>Catatan (opsional)</span><input id="f-ket" maxlength="120" placeholder="mis. transfer BCA"></label>
+
+        <div class="btn-row">
+          <button type="button" id="f-delete" class="btn danger-soft hidden">Hapus</button>
+          <button type="submit" id="f-save" class="btn primary grow">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ SHEET: DETAIL ============ -->
+  <div id="sheet-detail" class="sheet" aria-hidden="true">
+    <div class="sheet-backdrop" data-close></div>
+    <div class="sheet-panel" role="dialog">
+      <div class="grabber"></div>
+      <div id="detail-body"></div>
+    </div>
+  </div>
+
+  <!-- ============ DIALOG KONFIRMASI ============ -->
+  <div id="confirm" class="confirm hidden" role="alertdialog" aria-modal="true">
+    <div class="confirm-card glass">
+      <h3 id="confirm-title">Hapus transaksi</h3>
+      <p id="confirm-text" class="muted"></p>
+      <div class="btn-row">
+        <button id="confirm-no" class="btn soft grow">Batal</button>
+        <button id="confirm-yes" class="btn danger grow">Hapus</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+
+  <script src="config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js" defer></script>
+  <script src="app.js" defer></script>
+</body>
+</html>
